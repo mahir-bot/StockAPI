@@ -8,6 +8,7 @@ using DotNetAPI.Helpers;
 using DotNetAPI.Interfaces;
 using DotNetAPI.Mappers;
 using DotNetAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -26,6 +27,7 @@ namespace DotNetAPI.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> GetAll([FromQuery] QueryObjects query)
         {
             if (!ModelState.IsValid)
