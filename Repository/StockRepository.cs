@@ -57,6 +57,9 @@ namespace DotNetAPI.Repository
                 stocks = query.IsDescending ? stocks.OrderByDescending(x => x.Symbol) : stocks.OrderBy(x => x.Symbol);
                }
             }
+
+            var SkipNumber = (query.PageNumber - 1) * query.PageSize;
+            stocks = stocks.Skip(SkipNumber).Take(query.PageSize);
             return await stocks.ToListAsync();
         }
 
