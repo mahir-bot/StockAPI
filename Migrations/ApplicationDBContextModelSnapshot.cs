@@ -95,6 +95,10 @@ namespace DotNetAPI.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("AppUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -111,9 +115,26 @@ namespace DotNetAPI.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AppUserId");
+
                     b.HasIndex("StockId");
 
                     b.ToTable("Comments");
+                });
+
+            modelBuilder.Entity("DotNetAPI.Models.Portfolio", b =>
+                {
+                    b.Property<string>("AppUserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("StockId")
+                        .HasColumnType("int");
+
+                    b.HasKey("AppUserId", "StockId");
+
+                    b.HasIndex("StockId");
+
+                    b.ToTable("Portfolios");
                 });
 
             modelBuilder.Entity("DotNetAPI.Models.Stock", b =>
@@ -179,13 +200,13 @@ namespace DotNetAPI.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "c1dd3a31-2aea-4355-ac48-05f7c2fe8acc",
+                            Id = "5ab4c1ed-19f7-494a-9004-7e04820f23d0",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "85d4bc5e-37eb-41d0-87d6-f41a7b3378c2",
+                            Id = "82c91517-bd87-4158-9c52-fa34f353cdbb",
                             Name = "User",
                             NormalizedName = "USER"
                         });
@@ -299,9 +320,36 @@ namespace DotNetAPI.Migrations
 
             modelBuilder.Entity("DotNetAPI.Models.Comment", b =>
                 {
+                    b.HasOne("DotNetAPI.Models.AppUser", "AppUser")
+                        .WithMany()
+                        .HasForeignKey("AppUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("DotNetAPI.Models.Stock", "Stock")
                         .WithMany("Comments")
                         .HasForeignKey("StockId");
+
+                    b.Navigation("AppUser");
+
+                    b.Navigation("Stock");
+                });
+
+            modelBuilder.Entity("DotNetAPI.Models.Portfolio", b =>
+                {
+                    b.HasOne("DotNetAPI.Models.AppUser", "AppUser")
+                        .WithMany("Portfolios")
+                        .HasForeignKey("AppUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DotNetAPI.Models.Stock", "Stock")
+                        .WithMany("Portfolios")
+                        .HasForeignKey("StockId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AppUser");
 
                     b.Navigation("Stock");
                 });
@@ -357,9 +405,16 @@ namespace DotNetAPI.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("DotNetAPI.Models.AppUser", b =>
+                {
+                    b.Navigation("Portfolios");
+                });
+
             modelBuilder.Entity("DotNetAPI.Models.Stock", b =>
                 {
                     b.Navigation("Comments");
+
+                    b.Navigation("Portfolios");
                 });
 #pragma warning restore 612, 618
         }

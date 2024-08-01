@@ -1,10 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using DotNetAPI.Dtos.Comment;
+using DotNetAPI.Extensions;
 using DotNetAPI.Interfaces;
 using DotNetAPI.Mappers;
+using DotNetAPI.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DotNetAPI.Controllers
@@ -15,10 +19,13 @@ namespace DotNetAPI.Controllers
     {
         private readonly ICommentRepository _commentRepository;
         private readonly IStockRepository _stockRepository;
-        public CommentController(ICommentRepository commentRepository, IStockRepository stockRepository)
+
+        private readonly UserManager<AppUser> _userManager;
+        public CommentController(UserManager<AppUser> userManager,ICommentRepository commentRepository, IStockRepository stockRepository)
         {
             _commentRepository = commentRepository;
             _stockRepository = stockRepository;
+            _userManager = userManager;
         }
 
         [HttpGet]
@@ -50,6 +57,7 @@ namespace DotNetAPI.Controllers
         [Route("{stockId:int}")]
         public async Task<IActionResult> Create([FromRoute] int stockId, CreateCommentRequestDto commentDto)
         {
+            
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -58,7 +66,16 @@ namespace DotNetAPI.Controllers
             {
                 return BadRequest("Stock Id does not exist");
             }
+
+            var username = User.GetUsername();
+            var appUser = await _userManager.FindByNameAsync(username);
+            if (appUser == null)
+            {
+                return BadRequest("User not found");
+            }
+
             var commentModel = commentDto.ToCommentFromCreate(stockId);
+            commentModel.AppUserId = appUser.Id;
             await _commentRepository.CreateAsync(commentModel);
             return CreatedAtAction(nameof(GetById), new { id = commentModel }, commentModel.ToCommentDto());
         }

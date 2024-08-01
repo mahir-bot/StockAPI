@@ -20,9 +20,16 @@ namespace DotNetAPI.Data
 
         public DbSet<Comment> Comments { get; set; }
 
+        public DbSet<Portfolio> Portfolios { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<Portfolio>().HasKey(x => new { x.AppUserId, x.StockId });
+
+            modelBuilder.Entity<Portfolio>().HasOne<AppUser>(x => x.AppUser).WithMany(x => x.Portfolios).HasForeignKey(x => x.AppUserId);
+            modelBuilder.Entity<Portfolio>().HasOne<Stock>(x => x.Stock).WithMany(x => x.Portfolios).HasForeignKey(x => x.StockId);
+
             List<IdentityRole> roles =
             [
                 new IdentityRole

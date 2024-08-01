@@ -38,7 +38,7 @@ namespace DotNetAPI.Repository
 
         public async Task<List<Stock>> GetAllAsync(QueryObjects query)
         {
-            var stocks =  _context.Stocks.Include(x => x.Comments).AsQueryable();
+            var stocks =  _context.Stocks.Include(x => x.Comments).ThenInclude(a => a.AppUser).AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(query.Symbol))
             {
@@ -66,6 +66,11 @@ namespace DotNetAPI.Repository
         public async Task<Stock?> GetByIdAsync(int id)
         {
             return await _context.Stocks.Include(x => x.Comments).FirstOrDefaultAsync(x => x.Id == id);
+        }
+
+        public async Task<Stock?> GetBySymbolAsync(string symbol)
+        {
+            return await _context.Stocks.FirstOrDefaultAsync(x => x.Symbol == symbol);
         }
 
         public async Task<bool> StockExits(int id)
